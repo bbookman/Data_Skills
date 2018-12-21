@@ -9,13 +9,15 @@ import requests
 import random
 import pandas as pd
 import matplotlib.pyplot as plt
+from sys import argv
 
 #I get these keywords from the first page search result of data scientist at indeed; they're not whole but already tell a story.
-program_languages=['bash','r','python','java','c++','ruby','perl','matlab','javascript','scala','php']
-analysis_software=['excel','tableau','d3.js','sas','spss','d3','saas','pandas','numpy','scipy','sps','spotfire','scikits.learn','splunk','powerpoint','h2o']
-bigdata_tool=['hadoop','mapreduce','spark','pig','hive','shark','oozie','zookeeper','flume','mahout']
-databases=['sql','nosql','hbase','cassandra','mongodb','mysql','mssql','postgresql','oracle db','rdbms']
-overall_dict = program_languages + analysis_software + bigdata_tool + databases
+program_languages=['bash','r','python','java','c++','ruby','perl','matlab','javascript','scala','php', 'testng', 'junit', 'selenium', 'React', 'php']
+analysis_software=['excel','tableau','d3.js','sas','spss','d3','saas','pandas','numpy','Jenkins','scipy','sps','spotfire','scikits.learn','splunk','powerpoint','h2o','jira']
+bigdata_tool=['hadoop','mapreduce','spark','pig','hive','shark','oozie','zookeeper','flume','mahout', 'elasticsearch']
+databases=['sql','nosql','hbase','cassandra','mongodb','mysql','mssql','postgresql','oracle db','rdbms', 'hive', 'cucumber', 'aws', 'azure', 'rest', 'docker', 'chef', 'kubernetes']
+other = ['RestAssured', '.net', 'Angular', 'Scala', 'node.js', 'Kafka', 'Mesos']
+overall_dict = program_languages + analysis_software + bigdata_tool + databases + other
 # the following two functions are for webpage text processing to extract the skill keywords.    
 def keywords_extract(url):
     g = Goose()
@@ -53,7 +55,19 @@ def keywords_f(soup_obj):
 
 base_url = "http://www.indeed.com"    
 #change the start_url can scrape different cities.
-start_url = "http://www.indeed.com/jobs?q=data+scientist&l=San+Francisco%2C+CA"
+'''
+argv[1] = Job Title
+argv[2] = zip
+arg[3] = salary
+arg[4] = radius
+argv[5] = target filename
+as_and=&as_phr=&as_any=&as_not=&as_ttl=&as_cmp=&jt=fulltime&st=&as_src=&salary=100000&radius=25&l=95032&fromage=15&limit=10&sort=&psf=advsrch
+'''
+job_title = argv[1]
+location = argv[2]
+salary = argv[3]
+radius = argv[4]
+start_url = 'http://www.indeed.com/jobs?q={job_title}&l={location}&jt=fulltime&salary={salary}&radius={radius}'.format(job_title = job_title, location = location, salary = salary, radius = radius)
 resp = requests.get(start_url)
 start_soup = BeautifulSoup(resp.content)
 urls = start_soup.findAll('a',{'rel':'nofollow','target':'_blank'}) #this are the links of the job posts
@@ -66,8 +80,8 @@ else:
     num_jobs = int(num_jobs[0])
 num_pages = num_jobs/10 #calculates how many pages needed to do the scraping
 job_keywords=[]
-print 'There are %d jobs found and we need to extract %d pages.'%(num_jobs,num_pages)
-print 'extracting first page of job searching results'
+# print 'There are %d jobs found and we need to extract %d pages.'%(num_jobs,num_pages)
+# print 'extracting first page of job searching results'
 # prevent the driver stopping due to the unexpectedAlertBehaviour.
 webdriver.DesiredCapabilities.FIREFOX["unexpectedAlertBehaviour"] = "accept"
 get_info = True
@@ -133,5 +147,6 @@ Result = pd.DataFrame()
 Result['Skill'] = dict.keys()
 Result['Count'] = dict.values()
 Result['Ranking'] = Result['Count']/float(len(job_keywords))
+filename = argv[5]
 
-Result.to_csv('San_Francisco_CA_0415.csv',index=False)
+Result.to_csv('{filename}.csv'.format(filename = filename),index=False)
